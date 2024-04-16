@@ -24,7 +24,7 @@ router.post("/create-shop", catchAsyncErrors(async (req, res, next) => {
     });
 
 
-    const seller = {
+    let seller = {
       name: req.body.name,
       email: email,
       password: req.body.password,
@@ -37,9 +37,31 @@ router.post("/create-shop", catchAsyncErrors(async (req, res, next) => {
       zipCode: req.body.zipCode,
     };
 
-    const activationToken = createActivationToken(seller);
+    const { name, password, avatar, zipCode, address, phoneNumber } =
+        seller;
+
+      let db_seller = await Shop.findOne({ email });
+
+
+      if (db_seller) {
+        return next(new ErrorHandler("Seller already exists", 400));
+      }
+
+    seller = await Shop.create({
+        name,
+        email,
+        avatar,
+        password,
+        zipCode,
+        address,
+        phoneNumber,
+      });
+
+    const activationToken = createActivationToken({_id:seller._id});
 
     const activationUrl = `http://localhost:3000/seller/activation/${activationToken}`;
+    console.log("activationURL---", activationUrl);
+    
 
     try {
       await sendMail({
@@ -62,7 +84,7 @@ router.post("/create-shop", catchAsyncErrors(async (req, res, next) => {
 // create activation token
 const createActivationToken = (seller) => {
   return jwt.sign(seller, process.env.ACTIVATION_SECRET, {
-    expiresIn: "5m",
+    expiresIn: "30m",
   });
 };
 
@@ -70,36 +92,24 @@ const createActivationToken = (seller) => {
 router.post(
   "/activation",
   catchAsyncErrors(async (req, res, next) => {
+    
+    
     try {
       const { activation_token } = req.body;
+      console.log({activation_token,secret:process.env.ACTIVATION_SECRET});
 
       const newSeller = jwt.verify(
         activation_token,
         process.env.ACTIVATION_SECRET
       );
-
+      
       if (!newSeller) {
         return next(new ErrorHandler("Invalid token", 400));
       }
-      const { name, email, password, avatar, zipCode, address, phoneNumber } =
-        newSeller;
+      
 
-      let seller = await Shop.findOne({ email });
 
-      if (seller) {
-        return next(new ErrorHandler("Seller already exists", 400));
-      }
-
-      seller = await Shop.create({
-        name,
-        email,
-        avatar,
-        password,
-        zipCode,
-        address,
-        phoneNumber,
-      });
-
+     const seller= await Shop.findById(newSeller._id);
       sendShopToken(seller, 201, res);
     } catch (error) {
       return next(new ErrorHandler(error.message, 500));
