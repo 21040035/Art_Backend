@@ -204,6 +204,7 @@ router.put(
       res.status(201).json({
         success: true,
         user,
+        message:"Updated"
       });
     } catch (error) {
       return next(new ErrorHandler(error.message, 500));

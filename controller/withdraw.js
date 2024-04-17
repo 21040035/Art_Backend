@@ -1,4 +1,4 @@
-const Shop = require("../model/shop");
+const Shop = require("../model/artist");
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const express = require("express");

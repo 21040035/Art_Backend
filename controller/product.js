@@ -2,9 +2,9 @@ const express = require("express");
 const { isSeller, isAuthenticated, isAdmin } = require("../middleware/auth");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const router = express.Router();
-const Product = require("../model/product");
+const Product = require("../model/artwork");
 const Order = require("../model/order");
-const Shop = require("../model/shop");
+const Shop = require("../model/artist");
 const cloudinary = require("cloudinary");
 const ErrorHandler = require("../utils/ErrorHandler");
 
@@ -178,7 +178,7 @@ router.put(
 
       res.status(200).json({
         success: true,
-        message: "Reviwed succesfully!",
+        message: "Reviewed succesfully!",
       });
     } catch (error) {
       return next(new ErrorHandler(error, 400));
